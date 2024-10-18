@@ -31,7 +31,7 @@ jobs:
       - run: npm test
         working-directory: cicd 
 
-      # Docker-related steps
+      # Docker-related step
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
