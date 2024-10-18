@@ -2,31 +2,36 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["*"] # Trigger on push to any branch
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"] # Trigger on pull requests to main
 
 jobs:
   build:
-    
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [20.x] # Specify the Node.js version(s) to use
 
     steps:
-    - uses: actions/checkout@v4
-
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      working-directory: cicd # Ensure this directory contains package.json and package-lock.json
+      
+    - name: Build the project
+      run: npm run build --if-present
+      working-directory: cicd # Ensure this directory contains the build script
 
-    - run: npm ci
-      working-directory: /devops/cicd  # Explicitly set the correct directory
-
-    - run: npm run build --if-present
-      working-directory: /devops/cicd  # Explicitly set the correct directory
-
-    - run: npm test
-      working-directory: /devops/cicd  # Explicitly set the correct directory
+    - name: Run tests
+      run: npm test
+      working-directory: cicd # Ensure this directory contains the test script
