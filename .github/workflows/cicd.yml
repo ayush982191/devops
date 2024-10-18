@@ -49,4 +49,4 @@ jobs:
         with:
           context: cicd  # Set the context to the correct directory
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/demoapp:${{ github.sha }} 
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/demo-app:${{ github.sha }} 
