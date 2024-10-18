@@ -50,3 +50,16 @@ jobs:
           context: cicd  # Set the context to the correct directory
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/demoapp:${{ github.sha }} 
+
+      - name: Deploy to AWS ECS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+        run: |
+          echo "Deploying to ECS..."
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 905418282509.dkr.ecr.us-east-1.amazonaws.com
+          docker build -t demo-app .
+          docker tag demo-app:latest 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest
+          docker push 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest
+          aws ecs update-service --cluster demo-app-cluster --service demo-app-service --force-new-deployment
