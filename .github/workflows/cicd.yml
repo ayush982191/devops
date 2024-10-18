@@ -14,33 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [20.x]  # Node.js version to use
 
     steps:
-    - uses: actions/checkout@v4  # Check out the repository code
+    - uses: actions/checkout@v4  # Checkout the repository
 
-    # Debug step: Print the current working directory
-    - name: Print Working Directory
-      run: pwd
-
-    # Debug step: List files in the root directory
-    - name: List Files in Root Directory
-      run: ls -la
-
-    # After this debug step, check where the 'cicd' folder is located and adjust the paths below
-    # accordingly
-
+    # Set up Node.js with the version specified in the matrix
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'  # Enable npm caching
 
-    # Replace 'devops/cicd' with the correct path based on the output from the debug steps above
+    # Install dependencies using npm ci (clean install)
     - run: npm ci
-      working-directory: cicd  # Adjust this if 'cicd' is in a different directory
+      working-directory: devops/cicd  # Set working directory to 'devops/cicd'
 
+    # Build the project (if there's a build step)
     - run: npm run build --if-present
-      working-directory: cicd  # Adjust this if needed
+      working-directory: devops/cicd  # Set working directory to 'devops/cicd'
 
+    # Run tests
     - run: npm test
-      working-directory: cicd  # Adjust this if needed
+      working-directory: devops/cicd  # Set working directory to 'devops/cicd'
