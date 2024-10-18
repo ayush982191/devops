@@ -59,7 +59,8 @@ jobs:
         run: |
           echo "Deploying to ECS..."
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 905418282509.dkr.ecr.us-east-1.amazonaws.com
-          docker build -t demo-app .
+          docker build -t demo-app.
           docker tag demo-app:latest 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest
           docker push 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest
           aws ecs update-service --cluster demo-app-cluster --service demo-app-service --force-new-deployment
+
