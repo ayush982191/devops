@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
        run:
-         working-directory: ./cicd/
+         working-directory: devops/cicd
     strategy:
       matrix:
         node-version: [20.x]
