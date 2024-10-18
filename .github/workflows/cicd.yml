@@ -26,12 +26,12 @@ jobs:
         
     - name: Install dependencies
       run: npm ci
-      working-directory: cicd # Set the working directory to where package.json is located
+      working-directory: cicd # Ensure this directory contains package.json and package-lock.json
       
     - name: Build the project
       run: npm run build --if-present
-      working-directory: cicd # Set the working directory to where the build script is defined
+      working-directory: cicd # Ensure this directory contains the build script
 
     - name: Run tests
       run: npm test
-      working-directory: cicd # Set the working directory to where the test script is defined
+      working-directory: cicd # Ensure this directory contains the test script
