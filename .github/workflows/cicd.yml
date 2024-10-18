@@ -3,10 +3,10 @@ name: Node.js CI
 on:
   push:
     branches:
-      - "*"  # Run on every branch push
+      - "*"  # Runs on all branches
   pull_request:
     branches:
-      - main  # Run on pull request to main branch
+      - main  # Runs on pull requests to main
 
 jobs:
   build:
@@ -19,13 +19,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4  # Checkout the repository
 
-    # Debug step to list files in the root directory
+    # List all files in the root directory to confirm the structure
     - name: List Files in Root Directory
       run: ls -la
 
-    # Debug step to list files in the 'devops/cicd' directory
-    - name: List Files in devops/cicd Directory
-      run: ls -la devops/cicd
+    # List files in the cicd directory to ensure it exists
+    - name: List Files in cicd Directory
+      run: ls -la cicd
 
     # Set up Node.js with the version specified in the matrix
     - name: Use Node.js ${{ matrix.node-version }}
@@ -36,12 +36,12 @@ jobs:
 
     # Install dependencies using npm ci (clean install)
     - run: npm ci
-      working-directory: devops/cicd  # Set working directory to 'devops/cicd'
+      working-directory: cicd  # Set working directory to 'cicd'
 
     # Build the project (if there's a build step)
     - run: npm run build --if-present
-      working-directory: devops/cicd  # Set working directory to 'devops/cicd'
+      working-directory: cicd  # Set working directory to 'cicd'
 
     # Run tests
     - run: npm test
-      working-directory: devops/cicd  # Set working directory to 'devops/cicd'
+      working-directory: cicd  # Set working directory to 'cicd'
