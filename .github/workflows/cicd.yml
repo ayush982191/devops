@@ -1,15 +1,12 @@
 name: Node.js CI
 
 on:
-  # Triggers the workflow on any push to any branch
   push:
     branches:
-      - "*"  # This will trigger for all branches
-
-  # Triggers the workflow when a pull request is opened or merged into the 'main' branch
+      - "*"  # Run on every branch push
   pull_request:
     branches:
-      - main
+      - main  # Run on pull request to main branch
 
 jobs:
   build:
@@ -20,27 +17,30 @@ jobs:
         node-version: [20.x]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4  # Check out the repository code
 
+    # Debug step: Print the current working directory
     - name: Print Working Directory
-      run: pwd  # Debug step to print the current working directory
+      run: pwd
 
-    - name: List Files in Current Directory
-      run: ls -la  # Debug step to list files in the root directory
+    # Debug step: List files in the root directory
+    - name: List Files in Root Directory
+      run: ls -la
 
-    - name: List Files in DevOps Directory
-      run: ls -la devops  # Debug step to list files in the devops directory to verify 'cicd'
+    # After this debug step, check where the 'cicd' folder is located and adjust the paths below
+    # accordingly
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
 
+    # Replace 'devops/cicd' with the correct path based on the output from the debug steps above
     - run: npm ci
-      working-directory: devops/cicd  # Ensure the correct path
+      working-directory: cicd  # Adjust this if 'cicd' is in a different directory
 
     - run: npm run build --if-present
-      working-directory: devops/cicd
+      working-directory: cicd  # Adjust this if needed
 
     - run: npm test
-      working-directory: devops/cicd
+      working-directory: cicd  # Adjust this if needed
