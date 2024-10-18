@@ -1,10 +1,15 @@
 name: Node.js CI
 
 on:
+  # Triggers the workflow on any push to any branch
   push:
-    branches: [ "main" ]
+    branches:
+      - "*"  # This will trigger for all branches
+
+  # Triggers the workflow when a pull request is opened or merged into the 'main' branch
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
@@ -18,13 +23,13 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Print Working Directory
-      run: pwd  # Print the current working directory
+      run: pwd  # Debug step to print the current working directory
 
     - name: List Files in Current Directory
-      run: ls -la  # List files to confirm structure in the root directory
+      run: ls -la  # Debug step to list files in the root directory
 
     - name: List Files in DevOps Directory
-      run: ls -la devops  # List the contents of the devops directory (to check cicd folder exists)
+      run: ls -la devops  # Debug step to list files in the devops directory to verify 'cicd'
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
@@ -32,7 +37,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - run: npm ci
-      working-directory: devops/cicd  # Ensure correct directory, adjust if necessary after debugging
+      working-directory: devops/cicd  # Ensure the correct path
 
     - run: npm run build --if-present
       working-directory: devops/cicd
