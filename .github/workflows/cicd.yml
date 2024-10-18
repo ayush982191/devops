@@ -19,6 +19,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4  # Checkout the repository
 
+    # Debug step to list files in the root directory
+    - name: List Files in Root Directory
+      run: ls -la
+
+    # Debug step to list files in the 'devops/cicd' directory
+    - name: List Files in devops/cicd Directory
+      run: ls -la devops/cicd
+
     # Set up Node.js with the version specified in the matrix
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
