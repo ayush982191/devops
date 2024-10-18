@@ -39,45 +39,22 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login to AWS ECR
-        run: |
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418282509.dkr.ecr.us-east-1.amazonaws.com
-
-      - name: Build and push Docker image to ECR
-        run: |
-          docker build -t demo-app ./cicd  # Build the Docker image from cicd directory
-          docker tag demo-app:latest 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest  # Tag the image
-          docker push 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest  # Push to ECR
-
-      - name: Register Task Definition with ECS
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS Access Key
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS Secret Key
           AWS_REGION: us-east-1
         run: |
-          echo "Registering task definition..."
-          TASK_DEFINITION=$(cat <<EOF
-          {
-            "family": "demo-app-task",
-            "containerDefinitions": [
-              {
-                "name": "demo-app-container",
-                "image": "905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest",
-                "essential": true,
-                "memory": 512,
-                "cpu": 256,
-                "portMappings": [
-                  {
-                    "containerPort": 80,
-                    "hostPort": 80
-                  }
-                ]
-              }
-            ]
-          }
-          EOF
-          )
-          echo "$TASK_DEFINITION" > taskdef.json
-          aws ecs register-task-definition --cli-input-json file://taskdef.json
+          echo "Logging into AWS ECR..."
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 905418282509.dkr.ecr.us-east-1.amazonaws.com
+
+      - name: Build Docker image
+        run: |
+          docker build -t demo-app ./cicd  # Build the Docker image from the cicd directory
+
+      - name: Tag and Push Docker image to ECR
+        run: |
+          docker tag demo-app:latest 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest  # Tag the image
+          docker push 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest  # Push to ECR
 
       - name: Deploy to ECS
         env:
