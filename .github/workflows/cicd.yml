@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    
+
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -17,16 +17,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Print Working Directory
+      run: pwd  # Print the current working directory
+
+    - name: List Files in Current Directory
+      run: ls -la  # List files to confirm structure in the root directory
+
+    - name: List Files in DevOps Directory
+      run: ls -la devops  # List the contents of the devops directory (to check cicd folder exists)
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
 
     - run: npm ci
-      working-directory: /devops/cicd  # Explicitly set the correct directory
+      working-directory: devops/cicd  # Ensure correct directory, adjust if necessary after debugging
 
     - run: npm run build --if-present
-      working-directory: /devops/cicd  # Explicitly set the correct directory
+      working-directory: devops/cicd
 
     - run: npm test
-      working-directory: /devops/cicd  # Explicitly set the correct directory
+      working-directory: devops/cicd
