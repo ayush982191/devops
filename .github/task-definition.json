@@ -1,0 +1,19 @@
+{
+    "family": "demo-app-task",
+    "containerDefinitions": [
+      {
+        "name": "demo-app",
+        "image": "905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest",
+        "memory": 512,
+        "cpu": 256,
+        "essential": true,
+        "portMappings": [
+          {
+            "containerPort": 80,
+            "hostPort": 80
+          }
+        ]
+      }
+    ]
+  }
+  
