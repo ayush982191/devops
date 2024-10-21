@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "start": "vite",
     "test": "echo \"No tests specified yet\" && exit 0"  
   },
   "dependencies": {
