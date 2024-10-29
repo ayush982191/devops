@@ -2,9 +2,11 @@ name: Node.js CI/CD for AWS ECS
 
 on:
   push:
-    branches: ["**"] # Trigger on push to any branch
+    branches:
+      - "**" # Trigger on push to any branch
   pull_request:
-    branches: ["main"] # Trigger on pull requests to main
+    branches:
+      - "main" # Trigger on pull requests to main
 
 jobs:
   build:
@@ -17,58 +19,69 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
+      # Install dependencies
       - run: npm ci
         working-directory: cicd 
 
+      # Build the app (if build step exists)
       - run: npm run build --if-present
         working-directory: cicd 
 
+      # Run tests
       - run: npm test
         working-directory: cicd 
 
-      # Docker-related step
-      - name: Set up QEMU
+      # Docker-related steps
+      - name: Set up QEMU (for multi-platform builds)
         uses: docker/setup-qemu-action@v3
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker Buildx (optional)
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to AWS ECR
+      # Log in to AWS ECR
+      - name: Log in to AWS ECR
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS Access Key
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS Secret Key
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          echo "Logging into AWS ECR..."
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 905418282509.dkr.ecr.us-east-1.amazonaws.com
 
+      # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t demo-app ./cicd  # Build the Docker image from the cicd directory
+          docker build -t demo-app ./cicd
 
+      # Tag and push the Docker image to AWS ECR
       - name: Tag and Push Docker image to ECR
         run: |
-          docker tag demo-app:latest 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest  # Tag the image
-          docker push 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest  # Push to ECR
+          docker tag demo-app:latest 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest
+          docker push 905418282509.dkr.ecr.us-east-1.amazonaws.com/demo-app:latest
 
+      # Deploy to AWS ECS
       - name: Deploy to ECS
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          echo "Deploying to ECS..."
-          aws ecs update-service --cluster demo-app-cluster --service demo-app-service --force-new-deployment || \
-          aws ecs create-service \
-            --cluster demo-app-cluster \
-            --service-name demo-app-service \
-            --task-definition demo-app-task \
-            --desired-count 1 \
-            --launch-type EC2 \
-            --deployment-configuration maximumPercent=200,minimumHealthyPercent=100 \
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-xxxxxxxx],securityGroups=[sg-xxxxxxxx],assignPublicIp=ENABLED}"
+          # Check if service exists and update, otherwise create it
+          if aws ecs describe-services --cluster demo-app-cluster --services demo-app-service; then
+            echo "Updating ECS service..."
+            aws ecs update-service --cluster demo-app-cluster --service demo-app-service --force-new-deployment
+          else
+            echo "Creating ECS service..."
+            aws ecs create-service \
+              --cluster demo-app-cluster \
+              --service-name demo-app-service \
+              --task-definition demo-app-task \
+              --desired-count 1 \
+              --launch-type EC2 \
+              --deployment-configuration maximumPercent=200,minimumHealthyPercent=100 \
+              --network-configuration "awsvpcConfiguration={subnets=[subnet-xxxxxxxx],securityGroups=[sg-xxxxxxxx],assignPublicIp=ENABLED}"
+          fi
